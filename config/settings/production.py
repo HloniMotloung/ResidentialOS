@@ -80,7 +80,8 @@ X_FRAME_OPTIONS              = "DENY"
 # Replace with your actual frontend domain once you have one.
 
 CORS_ALLOW_ALL_ORIGINS = False
-CORS_ALLOWED_ORIGINS   = os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+_cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
+CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(",") if o.strip()]
 
 # ── CELERY ────────────────────────────────────────────────────────────────────
 # On the free Render tier, background tasks run eagerly (no Redis needed).
