@@ -7,11 +7,18 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
         username = 'admin'
-        email    = 'maclucia340@gmail.com'
-        password = 'Dk34209Ano'
+        email    = 'cata@email.com'
+        password = 'M@nager@2026'
 
         if User.objects.filter(username=username).exists():
             self.stdout.write(f'Superuser "{username}" already exists — skipping.')
         else:
-            User.objects.create_superuser(username=username, email=email, password=password)
+            user = User.objects.create_superuser(
+                username=username,
+                email=email,
+                password=password,
+            )
+            user.status    = 'approved'
+            user.is_active = True
+            user.save()
             self.stdout.write(f'Superuser "{username}" created successfully.')
