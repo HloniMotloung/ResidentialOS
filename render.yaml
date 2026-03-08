@@ -6,6 +6,7 @@ services:
       pip install -r requirements/production.txt &&
       python manage.py collectstatic --no-input &&
       python manage.py migrate
+      python manage.py createsu
     startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120
     envVars:
       - key: DJANGO_SETTINGS_MODULE
