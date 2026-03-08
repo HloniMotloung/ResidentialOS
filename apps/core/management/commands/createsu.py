@@ -6,7 +6,7 @@ class Command(BaseCommand):
     help = 'Creates a superuser non-interactively'
 
     def handle(self, *args, **kwargs):
-        username = 'admin'
+        username = 'hloni'
         email    = 'cata@email.com'
         password = 'M@nager@2026'
 
