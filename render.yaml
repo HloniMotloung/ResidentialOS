@@ -6,7 +6,7 @@ services:
       pip install -r requirements/production.txt &&
       python manage.py collectstatic --no-input &&
       python manage.py migrate &&
-      echo "from apps.authentication.models import User; User.objects.create_superuser('admin', 'your@email.com', 'YourPassword123')" | python manage.py shell
+      echo "from apps.authentication.models import User; User.objects.create_superuser('admin', 'maclucia340@gmail.com', 'Dk34209Ano')" | python manage.py shell
     buildCommand: >
       pip install -r requirements/production.txt &&
       python manage.py collectstatic --no-input &&
