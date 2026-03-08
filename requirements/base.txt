@@ -1,0 +1,27 @@
+# requirements/base.txt
+# Core dependencies used in ALL environments (local + production).
+# Install with: pip install -r requirements/base.txt
+
+# ── DJANGO ────────────────────────────────────────────────────────────────────
+Django>=5.2,<6.0
+
+# ── REST API ──────────────────────────────────────────────────────────────────
+djangorestframework>=3.15,<4.0          # DRF — used in every API view
+djangorestframework-simplejwt>=5.3,<6.0 # JWT auth + token blacklist
+django-filter>=24.0                      # ?status= / ?search= query filtering
+django-cors-headers>=4.3                 # CORS — allows browser frontends to call the API
+
+# ── CELERY (background tasks) ─────────────────────────────────────────────────
+# Used for: levy generation, email notifications, reminders
+celery>=5.3,<6.0
+kombu>=5.3,<6.0                          # Celery messaging transport (included by celery, pinned for stability)
+
+# ── EMAIL ─────────────────────────────────────────────────────────────────────
+# Base Django email works out of the box.
+# SendGrid is production-only — see requirements/production.txt
+
+# ── IMAGE HANDLING ────────────────────────────────────────────────────────────
+Pillow>=10.0                             # Required for ImageField (avatars, attachments)
+
+# ── CONFIGURATION ─────────────────────────────────────────────────────────────
+python-decouple>=3.8                     # Reads .env file into settings cleanly

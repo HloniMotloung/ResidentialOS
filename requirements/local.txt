@@ -1,0 +1,19 @@
+# requirements/local.txt
+# Development-only dependencies.
+# Install with: pip install -r requirements/local.txt
+
+-r base.txt
+
+# ── DEV SERVER ────────────────────────────────────────────────────────────────
+# Django's built-in runserver is fine locally — no gunicorn needed
+
+# ── DATABASE ──────────────────────────────────────────────────────────────────
+# SQLite is built into Python — no extra package needed locally
+
+# ── DEBUGGING ─────────────────────────────────────────────────────────────────
+django-debug-toolbar>=4.3               # In-browser query/performance inspector (optional but useful)
+
+# ── CODE QUALITY (optional) ───────────────────────────────────────────────────
+# Uncomment these if you want linting/formatting:
+# flake8>=7.0
+# black>=24.0
