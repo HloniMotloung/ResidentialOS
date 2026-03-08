@@ -5,6 +5,11 @@ services:
     buildCommand: >
       pip install -r requirements/production.txt &&
       python manage.py collectstatic --no-input &&
+      python manage.py migrate &&
+      echo "from apps.authentication.models import User; User.objects.create_superuser('admin', 'your@email.com', 'YourPassword123')" | python manage.py shell
+    buildCommand: >
+      pip install -r requirements/production.txt &&
+      python manage.py collectstatic --no-input &&
       python manage.py migrate
     startCommand: gunicorn config.wsgi:application --workers 2 --timeout 120
     envVars:
