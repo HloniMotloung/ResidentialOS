@@ -1,0 +1,61 @@
+{% extends "web/base.html" %}
+{% block title %}Announcements — Tlou property Solutions{% endblock %}
+{% block page_title %}Announcements{% endblock %}
+
+{% block topbar_actions %}
+{% if request.session.user_role != 'resident' and request.session.user_role != 'security' %}
+<a href="{% url 'web:announcement_add' %}" class="btn btn-primary btn-sm">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  New Announcement
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div style="display:flex;flex-direction:column;gap:16px">
+{% for ann in announcements %}
+<div class="form-card" style="{% if not ann.is_published %}opacity:0.6;{% endif %}">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+    <div style="flex:1">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        {% if ann.category == 'urgent' %}
+          <span class="badge badge-danger">Urgent</span>
+        {% elif ann.category == 'maintenance' %}
+          <span class="badge badge-warning">Maintenance</span>
+        {% elif ann.category == 'financial' %}
+          <span class="badge badge-gold">Financial</span>
+        {% else %}
+          <span class="badge badge-info">General</span>
+        {% endif %}
+        {% if not ann.is_published %}
+          <span class="badge badge-muted">Draft</span>
+        {% endif %}
+        <span style="font-size:12px;color:var(--text-muted)">
+          {{ ann.published_at|date:"d M Y"|default:"Not published" }}
+          · {{ ann.created_by.get_full_name }}
+        </span>
+      </div>
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:8px">{{ ann.title }}</h3>
+      <p style="font-size:14px;color:var(--text-secondary);white-space:pre-line">{{ ann.body|truncatewords:50 }}</p>
+    </div>
+    {% if request.session.user_role != 'resident' and request.session.user_role != 'security' %}
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      {% if not ann.is_published %}
+      <form method="post" action="">
+        {% csrf_token %}
+        <input type="hidden" name="publish_id" value="{{ ann.id }}">
+        <button class="btn btn-success btn-sm">Publish</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<div style="text-align:center;padding:80px 20px">
+  <div style="font-size:48px;margin-bottom:12px">📢</div>
+  <p style="color:var(--text-muted)">No announcements yet.</p>
+</div>
+{% endfor %}
+</div>
+{% endblock %}

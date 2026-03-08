@@ -1,0 +1,214 @@
+{% extends "web/base.html" %}
+{% block title %}Visitors — ResidentialOS{% endblock %}
+{% block page_title %}Visitor Management{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-secondary btn-sm" onclick="openModal('preRegModal')">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Pre-Register
+</button>
+<button class="btn btn-primary btn-sm" onclick="openModal('gateLogModal')">
+  <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+  Log Entry
+</button>
+{% endblock %}
+
+{% block content %}
+
+<!-- Visitors currently inside -->
+{% if visitors_inside %}
+<div class="table-card" style="border-color:var(--warning);margin-bottom:20px">
+  <div class="table-card-header" style="background:var(--warning-dim)">
+    <span class="table-card-title" style="color:var(--warning)">
+      🟡 {{ visitors_inside|length }} Visitor{{ visitors_inside|length|pluralize }} Currently Inside
+    </span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Visitor</th><th>Host</th><th>Vehicle</th><th>Entry Time</th><th></th></tr></thead>
+      <tbody>
+      {% for log in visitors_inside %}
+      <tr>
+        <td>{{ log.visitor_name }}</td>
+        <td>{{ log.host_resident.full_name|default:"—" }}</td>
+        <td>{{ log.vehicle_registration|default:"—" }}</td>
+        <td>{{ log.entry_time|date:"H:i" }} ({{ log.entry_time|timesince }} ago)</td>
+        <td>
+          <form method="post" action="{% url 'web:visitor_exit' log.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning btn-sm">Log Exit</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Gate log -->
+<div class="filter-bar">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search visitor, host, vehicle…">
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="table-card">
+    <div class="table-card-header">
+      <span class="table-card-title">Gate Log — Today</span>
+    </div>
+    <div class="table-wrap">
+      <table id="mainTable">
+        <thead><tr>
+          <th>Visitor</th><th>Host</th><th>Entry</th><th>Exit</th><th>Duration</th>
+        </tr></thead>
+        <tbody>
+        {% for log in gate_logs %}
+        <tr>
+          <td>
+            <div>{{ log.visitor_name }}</div>
+            <div style="font-size:11.5px;color:var(--text-muted)">{{ log.vehicle_registration|default:"" }}</div>
+          </td>
+          <td>{{ log.host_resident.full_name|default:"—" }}</td>
+          <td>{{ log.entry_time|date:"H:i" }}</td>
+          <td>{% if log.exit_time %}{{ log.exit_time|date:"H:i" }}{% else %}<span style="color:var(--warning)">Inside</span>{% endif %}</td>
+          <td>{% if log.duration_minutes %}{{ log.duration_minutes }}m{% else %}—{% endif %}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="table-empty" style="padding:40px">
+          <p>No visitors logged today</p>
+        </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Pre-registered -->
+  <div class="table-card">
+    <div class="table-card-header">
+      <span class="table-card-title">Pre-Registrations</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th>Visitor</th><th>Host</th><th>Expected</th><th>Code</th><th>Status</th>
+        </tr></thead>
+        <tbody>
+        {% for pre in pre_registrations %}
+        <tr>
+          <td>{{ pre.visitor_name }}</td>
+          <td>{{ pre.resident.full_name }}</td>
+          <td>{{ pre.expected_arrival|date:"d M H:i" }}</td>
+          <td class="font-mono" style="letter-spacing:2px;color:var(--gold-light)">{{ pre.access_code }}</td>
+          <td>
+            {% if pre.is_used %}<span class="badge badge-muted">Used</span>
+            {% elif pre.is_valid %}<span class="badge badge-success">Active</span>
+            {% else %}<span class="badge badge-danger">Expired</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" class="table-empty" style="padding:40px">
+          <p>No pre-registrations</p>
+        </td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- GATE LOG MODAL -->
+<div class="modal-overlay" id="gateLogModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Log Visitor Entry</span>
+      <button class="modal-close" onclick="closeModal('gateLogModal')">×</button>
+    </div>
+    <form method="post" action="{% url 'web:visitor_entry' %}">
+      {% csrf_token %}
+      <div class="form-grid" style="gap:14px">
+        <div class="form-group">
+          <label>Access Code <span style="color:var(--text-muted);font-weight:400">(if pre-registered)</span></label>
+          <input class="form-control" name="access_code" placeholder="6-digit code" style="letter-spacing:3px;font-size:18px;text-align:center">
+          <span class="form-hint">Leave blank for walk-in visitors</span>
+        </div>
+        <div class="form-group">
+          <label>Visitor Name *</label>
+          <input class="form-control" name="visitor_name" placeholder="Full name" required>
+        </div>
+        <div class="form-group">
+          <label>Visitor ID Number</label>
+          <input class="form-control" name="visitor_id_number" placeholder="Optional">
+        </div>
+        <div class="form-group">
+          <label>Vehicle Registration</label>
+          <input class="form-control" name="vehicle_registration" placeholder="e.g. ABC 123 GP">
+        </div>
+        <div class="form-group">
+          <label>Host Resident *</label>
+          <select class="form-control" name="host_resident" required>
+            <option value="">— Select resident —</option>
+            {% for resident in residents %}
+            <option value="{{ resident.id }}">{{ resident.full_name }} ({{ resident.unit.unit_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('gateLogModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Log Entry</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- PRE-REGISTER MODAL -->
+<div class="modal-overlay" id="preRegModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Pre-Register a Visitor</span>
+      <button class="modal-close" onclick="closeModal('preRegModal')">×</button>
+    </div>
+    <form method="post" action="{% url 'web:visitor_preregister' %}">
+      {% csrf_token %}
+      <div class="form-grid" style="gap:14px">
+        <div class="form-group">
+          <label>Visitor Name *</label>
+          <input class="form-control" name="visitor_name" required>
+        </div>
+        <div class="form-group">
+          <label>Visitor Phone</label>
+          <input class="form-control" name="visitor_phone" type="tel">
+        </div>
+        <div class="form-group">
+          <label>Expected Arrival *</label>
+          <input class="form-control" name="expected_arrival" type="datetime-local" required>
+        </div>
+        <div class="form-group">
+          <label>Purpose of Visit</label>
+          <input class="form-control" name="purpose" placeholder="e.g. Family visit, Delivery">
+        </div>
+        <div class="form-group">
+          <label>Host Resident</label>
+          <select class="form-control" name="resident">
+            <option value="">— Select your unit —</option>
+            {% for resident in residents %}
+            <option value="{{ resident.id }}">{{ resident.full_name }} ({{ resident.unit.unit_number }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('preRegModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Access Code</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

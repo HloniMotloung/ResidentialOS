@@ -1,0 +1,46 @@
+# Environment & secrets
+.env
+*.env
+
+# Database
+db.sqlite3
+*.sqlite3
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pdb
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Django collected static & media
+staticfiles/
+media/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Coverage
+.coverage
+htmlcov/

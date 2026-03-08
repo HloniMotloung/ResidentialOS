@@ -1,0 +1,87 @@
+{% extends "web/base.html" %}
+{% block title %}{{ req.title }} — Maintenance{% endblock %}
+{% block page_title %}Maintenance Request{% endblock %}
+{% block content %}
+<div class="sidebar-layout">
+  <div class="sidebar-layout-left">
+    <div class="form-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+        <div>
+          <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">{{ req.title }}</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="priority-{{ req.priority }}">{{ req.get_priority_display }}</span>
+            {% if req.status == 'open' %}<span class="badge badge-danger">Open</span>
+            {% elif req.status == 'in_progress' %}<span class="badge badge-warning">In Progress</span>
+            {% elif req.status == 'resolved' %}<span class="badge badge-success">Resolved</span>
+            {% else %}<span class="badge badge-muted">{{ req.get_status_display }}</span>
+            {% endif %}
+            <span class="badge badge-info">{{ req.get_category_display }}</span>
+          </div>
+        </div>
+        {% if role != 'resident' and role != 'security' %}
+        <form method="post" action="">
+          {% csrf_token %}
+          <select class="filter-select" name="status" onchange="this.form.submit()">
+            <option value="">Update Status…</option>
+            <option value="open">Open</option>
+            <option value="in_progress">In Progress</option>
+            <option value="on_hold">On Hold</option>
+            <option value="resolved">Resolved</option>
+            <option value="closed">Closed</option>
+          </select>
+        </form>
+        {% endif %}
+      </div>
+      <p style="color:var(--text-secondary);white-space:pre-line">{{ req.description }}</p>
+    </div>
+
+    <!-- Comments -->
+    <div class="table-card">
+      <div class="table-card-header"><span class="table-card-title">Comments</span></div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:12px">
+        {% for comment in comments %}
+        <div style="background:var(--bg-elevated);border-radius:var(--radius);padding:12px;{% if comment.is_internal %}border-left:3px solid var(--warning);{% endif %}">
+          <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+            <span style="font-size:12px;font-weight:700">{{ comment.author.get_full_name }}</span>
+            <span style="font-size:11px;color:var(--text-muted)">{{ comment.created_at|date:"d M Y H:i" }}</span>
+          </div>
+          <p style="font-size:13.5px;color:var(--text-secondary)">{{ comment.comment }}</p>
+          {% if comment.is_internal %}<span class="badge badge-warning" style="font-size:10px;margin-top:6px">Internal note</span>{% endif %}
+        </div>
+        {% empty %}
+        <p style="color:var(--text-muted);text-align:center;padding:20px">No comments yet.</p>
+        {% endfor %}
+      </div>
+      <div style="padding:16px;border-top:1px solid var(--border)">
+        <form method="post" action="">
+          {% csrf_token %}
+          <input type="hidden" name="add_comment" value="1">
+          <div class="form-group" style="margin-bottom:10px">
+            <textarea class="form-control" name="comment" rows="3" placeholder="Add a comment…" required></textarea>
+          </div>
+          {% if role != 'resident' %}
+          <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:10px;text-transform:none;letter-spacing:0">
+            <input type="checkbox" name="is_internal"> Mark as internal note (hidden from residents)
+          </label>
+          {% endif %}
+          <button type="submit" class="btn btn-primary btn-sm">Post Comment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="form-card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:12px">Details</div>
+      <div style="display:flex;flex-direction:column;gap:12px;font-size:13.5px">
+        <div><span style="color:var(--text-muted)">Unit:</span> <strong>{{ req.unit.unit_number }}</strong></div>
+        <div><span style="color:var(--text-muted)">Reported by:</span> {{ req.reported_by.full_name|default:"Unknown" }}</div>
+        <div><span style="color:var(--text-muted)">Submitted:</span> {{ req.created_at|date:"d M Y" }}</div>
+        <div><span style="color:var(--text-muted)">Assigned to:</span> {{ req.assigned_to.get_full_name|default:"Unassigned" }}</div>
+        {% if req.estimated_cost %}<div><span style="color:var(--text-muted)">Est. cost:</span> R{{ req.estimated_cost|floatformat:2 }}</div>{% endif %}
+        {% if req.resolved_at %}<div><span style="color:var(--text-muted)">Resolved:</span> {{ req.resolved_at|date:"d M Y" }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

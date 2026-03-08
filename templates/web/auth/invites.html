@@ -1,0 +1,104 @@
+{% extends "web/base.html" %}
+{% block title %}Invite Links — Tlou property Solutions{% endblock %}
+{% block page_title %}Invite Links{% endblock %}
+
+{% block topbar_actions %}
+<button class="btn btn-primary btn-sm" onclick="openModal('newInviteModal')">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Create Invite
+</button>
+{% endblock %}
+
+{% block content %}
+
+<div class="form-card" style="margin-bottom:20px;background:var(--gold-dim);border-color:var(--gold)">
+  <p style="font-size:13.5px;color:var(--gold-light)">
+    <strong>How invite links work:</strong>
+    Generate a link and share it with residents via WhatsApp or email.
+    Anyone who registers using the link is automatically approved and linked to
+    <strong>{{ request.session.estate_name }}</strong> — no manual approval needed.
+  </p>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:14px">
+{% for invite in invites %}
+<div class="invite-card {% if not invite.is_valid %}opacity-50{% endif %}">
+  <div>
+    <div class="invite-code">{{ invite.code }}</div>
+    <div style="font-size:11px;color:var(--text-muted);margin-top:4px">
+      {{ invite.get_role_display }} ·
+      {% if invite.max_uses > 0 %}{{ invite.times_used }}/{{ invite.max_uses }} uses{% else %}Unlimited uses{% endif %}
+      {% if invite.expires_at %}· Expires {{ invite.expires_at|date:"d M Y" }}{% endif %}
+    </div>
+  </div>
+
+  <div class="invite-url">
+    {{ request.scheme }}://{{ request.get_host }}/register?invite={{ invite.code }}
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;flex-shrink:0">
+    {% if invite.is_valid %}
+    <span class="badge badge-success">Active</span>
+    {% else %}
+    <span class="badge badge-muted">Inactive</span>
+    {% endif %}
+
+    <button class="btn btn-secondary btn-sm"
+            onclick="copyText('{{ request.scheme }}://{{ request.get_host }}/register?invite={{ invite.code }}', this)">
+      Copy Link
+    </button>
+
+    {% if invite.is_active %}
+    <form method="post" action="{% url 'web:invite_deactivate' invite.id %}" style="margin:0">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-sm"
+              onclick="return confirm('Deactivate this invite link?')">Deactivate</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<div style="text-align:center;padding:60px">
+  <p style="color:var(--text-muted)">No invite links yet. Create one to share with residents.</p>
+</div>
+{% endfor %}
+</div>
+
+<!-- CREATE INVITE MODAL -->
+<div class="modal-overlay" id="newInviteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Create Invite Link</span>
+      <button class="modal-close" onclick="closeModal('newInviteModal')">×</button>
+    </div>
+    <form method="post" action="{% url 'web:invite_create' %}">
+      {% csrf_token %}
+      <div class="form-grid" style="gap:14px">
+        <div class="form-group">
+          <label>Role for Registrants</label>
+          <select class="form-control" name="role">
+            <option value="resident">Resident</option>
+            <option value="security">Security Officer</option>
+            <option value="estate_manager">Estate Manager</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Max Uses</label>
+          <input class="form-control" type="number" name="max_uses" value="1" min="0"
+                 placeholder="0 = unlimited">
+          <span class="form-hint">Set to 0 for unlimited uses (e.g. bulk invites)</span>
+        </div>
+        <div class="form-group">
+          <label>Expires On <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+          <input class="form-control" type="date" name="expires_at">
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('newInviteModal')">Cancel</button>
+          <button type="submit" class="btn btn-primary">Generate Link</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

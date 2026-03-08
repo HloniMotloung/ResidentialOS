@@ -1,0 +1,92 @@
+{% extends "web/base.html" %}
+{% block title %}Pending Registrations — Tlou property Solutions{% endblock %}
+{% block page_title %}Pending Registrations{% endblock %}
+
+{% block content %}
+{% if pending %}
+<div class="table-card">
+    <div class="table-card-header">
+        <span class="table-card-title">{{ pending|length }} Pending Approval{{ pending|length|pluralize }}</span>
+        <span class="badge badge-warning" style="margin-left:8px">Requires Action</span>
+    </div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr>
+                <th>Name</th><th>Email</th><th>Phone</th><th>Unit Requested</th><th>Registered</th><th>Actions</th>
+            </tr></thead>
+            <tbody>
+            {% for membership in pending %}
+            <tr>
+                <td>
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <div class="user-avatar" style="width:32px;height:32px;font-size:11px;flex-shrink:0">
+                            {{ membership.user.first_name|first|upper }}{{ membership.user.last_name|first|upper }}
+                        </div>
+                        {{ membership.user.get_full_name }}
+                    </div>
+                </td>
+                <td>{{ membership.user.email }}</td>
+                <td>{{ membership.user.phone|default:"—" }}</td>
+                <td>{{ membership.unit_number|default:"Not specified" }}</td>
+                <td style="font-size:12px;color:var(--text-muted)">{{ membership.joined_at|date:"d M Y H:i" }}</td>
+                <td>
+                    <div style="display:flex;gap:8px">
+                        <form method="post" action="{% url 'web:approve_registration' membership.id 'approve' %}" style="margin:0">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success btn-sm">✓ Approve</button>
+                        </form>
+                        <button type="button" class="btn btn-danger btn-sm"
+                                onclick="openRejectModal({{ membership.id }}, '{{ membership.user.get_full_name }}')">
+                            ✗ Reject
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div style="text-align:center;padding:80px 20px">
+    <div style="font-size:48px;margin-bottom:16px">✓</div>
+    <h2 style="font-family:var(--font-display);color:var(--success);margin-bottom:8px">All caught up!</h2>
+    <p style="color:var(--text-muted)">No pending registrations at the moment.</p>
+</div>
+{% endif %}
+
+<!-- REJECT MODAL -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal">
+        <div class="modal-header">
+            <span class="modal-title">Reject Registration</span>
+            <button class="modal-close" onclick="closeModal('rejectModal')">×</button>
+        </div>
+        <p style="color:var(--text-secondary);margin-bottom:16px;font-size:13.5px">
+            Rejecting <strong id="rejectName"></strong>. They will receive an email with your reason.
+        </p>
+        <form method="post" id="rejectForm">
+            {% csrf_token %}
+            <div class="form-group" style="margin-bottom:16px">
+                <label>Reason for Rejection <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+                <textarea class="form-control" name="reason" rows="3"
+                          placeholder="e.g. Could not verify identity. Please contact the estate office."></textarea>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('rejectModal')">Cancel</button>
+                <button type="submit" class="btn btn-danger">Confirm Rejection</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function openRejectModal(membershipId, name) {
+      document.getElementById('rejectName').textContent = name;
+      document.getElementById('rejectForm').action = `/pending/${membershipId}/reject/`;
+      openModal('rejectModal');
+    }
+</script>
+{% endblock %}

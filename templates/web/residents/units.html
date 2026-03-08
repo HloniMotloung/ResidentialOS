@@ -1,0 +1,37 @@
+{% comment %}units.html{% endcomment %}
+{% extends "web/base.html" %}
+{% block title %}Units — ResidentialOS{% endblock %}
+{% block page_title %}Units{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'web:unit_add' %}" class="btn btn-primary btn-sm">+ Add Unit</a>
+{% endblock %}
+{% block content %}
+<div class="filter-bar">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search unit number…">
+  </div>
+</div>
+<div class="table-card">
+  <div class="table-card-header"><span class="table-card-title">{{ units|length }} Unit{{ units|length|pluralize }}</span></div>
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead><tr><th>Unit No.</th><th>Type</th><th>Bedrooms</th><th>Bathrooms</th><th>Size (m²)</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for unit in units %}
+      <tr>
+        <td>{{ unit.unit_number }}</td>
+        <td>{{ unit.get_unit_type_display }}</td>
+        <td>{{ unit.bedrooms }}</td>
+        <td>{{ unit.bathrooms }}</td>
+        <td>{{ unit.floor_size_sqm|default:"—" }}</td>
+        <td>{% if unit.is_occupied %}<span class="badge badge-success">Occupied</span>{% else %}<span class="badge badge-muted">Vacant</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6"><div class="table-empty"><p>No units added yet. <a href="{% url 'web:unit_add' %}" style="color:var(--gold-light)">Add your first unit.</a></p></div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

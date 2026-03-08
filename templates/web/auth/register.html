@@ -1,0 +1,118 @@
+{% extends "web/base.html" %}
+{% block title %}Register — Tlou property Solutions{% endblock %}
+
+{% block auth_content %}
+<div class="auth-page">
+  <div class="auth-card" style="max-width:540px">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">R</div>
+      <h1>Tlou property Solutions</h1>
+      <p>Create your account</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" style="margin-bottom:16px">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()">×</button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'web:register' %}" id="registerForm">
+      {% csrf_token %}
+      <div class="form-grid form-grid-2" style="gap:14px">
+
+        <div class="form-group">
+          <label for="first_name">First Name</label>
+          <input class="form-control" type="text" id="first_name" name="first_name"
+                 placeholder="Sarah" required value="{{ request.POST.first_name|default:'' }}">
+        </div>
+        <div class="form-group">
+          <label for="last_name">Last Name</label>
+          <input class="form-control" type="text" id="last_name" name="last_name"
+                 placeholder="Johnson" required value="{{ request.POST.last_name|default:'' }}">
+        </div>
+
+        <div class="form-group full">
+          <label for="username">Username</label>
+          <input class="form-control" type="text" id="username" name="username"
+                 placeholder="sarah.johnson" required value="{{ request.POST.username|default:'' }}">
+        </div>
+
+        <div class="form-group full">
+          <label for="email">Email Address</label>
+          <input class="form-control" type="email" id="email" name="email"
+                 placeholder="sarah@email.com" required value="{{ request.POST.email|default:'' }}">
+        </div>
+
+        <div class="form-group full">
+          <label for="phone">Phone Number</label>
+          <input class="form-control" type="tel" id="phone" name="phone"
+                 placeholder="071 234 5678" value="{{ request.POST.phone|default:'' }}">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input class="form-control" type="password" id="password" name="password"
+                 placeholder="Min 8 characters" required minlength="8">
+        </div>
+        <div class="form-group">
+          <label for="password2">Confirm Password</label>
+          <input class="form-control" type="password" id="password2" name="password2"
+                 placeholder="Repeat password" required>
+          <span class="form-error" id="password2_error" style="display:none"></span>
+        </div>
+
+        <div style="grid-column:1/-1">
+          <div class="divider"></div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">
+            <strong style="color:var(--gold-light)">Have an invite code?</strong>
+            Paste it below to be automatically linked to your estate.
+            Otherwise enter your estate code or leave blank and wait for manager approval.
+          </p>
+        </div>
+
+        <div class="form-group full">
+          <label for="invite_code">Invite Code <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
+          <input class="form-control" type="text" id="invite_code" name="invite_code"
+                 placeholder="e.g. AX9K2M" style="letter-spacing:2px;text-transform:uppercase"
+                 value="{{ request.GET.invite|default:'' }}">
+          <span class="form-hint" id="invite_info"></span>
+        </div>
+
+          <div class="form-group">
+              <label for="id_estate_slug">Select Your Estate <span style="color:var(--text-muted);font-weight:400">(if no invite code)</span></label>
+              <select class="form-control" id="id_estate_slug" name="estate_slug">
+                  <option value="">— Select your estate —</option>
+                  {% for estate in estates %}
+                  <option value="{{ estate.slug }}"
+                          {% if request.POST.estate_slug == estate.slug %}selected{% endif %}>
+                      {{ estate.name }}
+                  </option>
+                  {% endfor %}
+              </select>
+              <span class="form-hint">Your registration will be sent to the manager of the selected estate for approval.</span>
+          </div>
+        <div class="form-group">
+          <label for="unit_number">Your Unit Number</label>
+          <input class="form-control" type="text" id="unit_number" name="unit_number"
+                 placeholder="e.g. A101" value="{{ request.POST.unit_number|default:'' }}">
+        </div>
+
+        <div class="full">
+          <button type="submit" class="btn btn-primary"
+                  style="width:100%;justify-content:center;padding:12px"
+                  onclick="return validatePasswords('password','password2')">
+            Create Account
+          </button>
+        </div>
+      </div>
+    </form>
+
+    <div class="auth-footer">
+      Already have an account? <a href="{% url 'web:login' %}">Sign in</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

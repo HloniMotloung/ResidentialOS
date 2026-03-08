@@ -1,0 +1,47 @@
+{% extends "web/base.html" %}
+{% block title %}Add Levy Billing{% endblock %}
+{% block page_title %}Add Levy Billing{% endblock %}
+{% block content %}
+<div class="form-card" style="max-width:600px">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid form-grid-2" style="gap:16px">
+      <div class="form-section-title">Billing Details</div>
+      <div class="form-group">
+        <label>Unit *</label>
+        <select class="form-control" name="unit" required>
+          <option value="">— Select unit —</option>
+          {% for unit in units %}
+          <option value="{{ unit.id }}">{{ unit.unit_number }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Resident</label>
+        <select class="form-control" name="resident">
+          <option value="">— Select resident —</option>
+          {% for resident in residents %}
+          <option value="{{ resident.id }}">{{ resident.full_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Billing Month *</label>
+        <input class="form-control" name="billing_month" type="month" required>
+      </div>
+      <div class="form-group">
+        <label>Due Date *</label>
+        <input class="form-control" name="due_date" type="date" required>
+      </div>
+      <div class="form-group full">
+        <label>Amount Due *</label>
+        <input class="form-control" name="amount_due" type="number" step="0.01" required placeholder="0.00">
+      </div>
+      <div class="form-actions">
+        <a href="{% url 'web:levies' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Create Billing</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

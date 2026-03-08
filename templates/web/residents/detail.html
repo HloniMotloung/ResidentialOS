@@ -1,0 +1,69 @@
+{% extends "web/base.html" %}
+{% block title %}{{ resident.full_name }} — ResidentialOS{% endblock %}
+{% block page_title %}Resident Detail{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'web:resident_edit' resident.id %}" class="btn btn-secondary btn-sm">Edit</a>
+{% endblock %}
+{% block content %}
+<div class="sidebar-layout">
+  <div class="sidebar-layout-left">
+    <div class="detail-header">
+      <div class="detail-avatar">{{ resident.first_name|first|upper }}{{ resident.last_name|first|upper }}</div>
+      <div class="detail-info">
+        <h2>{{ resident.full_name }}</h2>
+        <p>{{ resident.get_resident_type_display }} · Unit {{ resident.unit.unit_number|default:"No unit" }}</p>
+        <div class="detail-meta">
+          {% if resident.email %}<div class="detail-meta-item"><svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>{{ resident.email }}</div>{% endif %}
+          {% if resident.phone %}<div class="detail-meta-item"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6 6l.92-.92a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 21.73 16.92z"/></svg>{{ resident.phone }}</div>{% endif %}
+          <div class="detail-meta-item">Moved in {{ resident.move_in_date|date:"d M Y"|default:"Date unknown" }}</div>
+        </div>
+      </div>
+      {% if resident.is_active %}<span class="badge badge-success" style="align-self:flex-start">Active</span>{% else %}<span class="badge badge-muted" style="align-self:flex-start">Inactive</span>{% endif %}
+    </div>
+
+    <!-- Levy history -->
+    <div class="table-card">
+      <div class="table-card-header"><span class="table-card-title">Levy History</span></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Month</th><th>Amount Due</th><th>Paid</th><th>Balance</th><th>Status</th></tr></thead>
+          <tbody>
+          {% for billing in billings %}
+          <tr>
+            <td>{{ billing.billing_month|date:"M Y" }}</td>
+            <td class="font-mono">R{{ billing.amount_due|floatformat:2 }}</td>
+            <td class="font-mono text-success">R{{ billing.amount_paid|floatformat:2 }}</td>
+            <td class="font-mono {% if billing.balance > 0 %}text-danger{% else %}text-success{% endif %}">R{{ billing.balance|floatformat:2 }}</td>
+            <td>{% if billing.status == 'paid' %}<span class="badge badge-success">Paid</span>
+            {% elif billing.status == 'overdue' %}<span class="badge badge-danger">Overdue</span>
+            {% elif billing.status == 'partial' %}<span class="badge badge-warning">Partial</span>
+            {% else %}<span class="badge badge-muted">Outstanding</span>{% endif %}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="5" class="table-empty" style="padding:30px"><p>No levy history</p></td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="form-card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary);margin-bottom:12px">Unit Info</div>
+      {% if resident.unit %}
+      <div style="font-size:24px;font-weight:700;margin-bottom:4px">{{ resident.unit.unit_number }}</div>
+      <div style="font-size:13px;color:var(--text-muted)">{{ resident.unit.get_unit_type_display }}</div>
+      <div class="divider"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div><span style="color:var(--text-muted)">Bedrooms:</span> {{ resident.unit.bedrooms }}</div>
+        <div><span style="color:var(--text-muted)">Bathrooms:</span> {{ resident.unit.bathrooms }}</div>
+        {% if resident.unit.floor_size_sqm %}<div><span style="color:var(--text-muted)">Size:</span> {{ resident.unit.floor_size_sqm }} m²</div>{% endif %}
+      </div>
+      {% else %}
+      <p style="color:var(--text-muted)">No unit assigned</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

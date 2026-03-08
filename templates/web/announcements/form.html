@@ -1,0 +1,38 @@
+{% extends "web/base.html" %}
+{% block title %}New Announcement{% endblock %}
+{% block page_title %}New Announcement{% endblock %}
+{% block content %}
+<div class="form-card" style="max-width:660px">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid" style="gap:16px">
+      <div class="form-section-title">Announcement</div>
+      <div class="form-group">
+        <label>Title *</label>
+        <input class="form-control" name="title" required placeholder="Announcement title">
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select class="form-control" name="category">
+          <option value="general">General</option>
+          <option value="urgent">Urgent</option>
+          <option value="maintenance">Maintenance</option>
+          <option value="financial">Financial</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Message *</label>
+        <textarea class="form-control" name="body" rows="8" required placeholder="Write your announcement here…"></textarea>
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;text-transform:none;letter-spacing:0;font-size:13.5px;font-weight:500;cursor:pointer">
+        <input type="checkbox" name="send_email" checked> Send email notification to all residents
+      </label>
+      <div style="display:flex;gap:10px;justify-content:flex-end;padding-top:8px">
+        <a href="{% url 'web:announcements' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" name="save_draft" class="btn btn-secondary">Save as Draft</button>
+        <button type="submit" name="publish_now" class="btn btn-primary">Publish Now</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

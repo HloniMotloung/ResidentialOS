@@ -1,0 +1,51 @@
+{% extends "web/base.html" %}
+{% block title %}Sign In — Tlou property Solutions{% endblock %}
+
+{% block auth_content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+        <div class="auth-logo-icon" style="font-size:28px;background:linear-gradient(135deg, #c9a84c, #a07830)">
+            🐘
+        </div>
+      <h1>Tlou Property Solutions</h1>
+      <p>Estate Management Platform</p>
+    </div>
+
+    {% if messages %}
+      {% for message in messages %}
+      <div class="alert alert-{{ message.tags }}" style="margin-bottom:16px">
+        <span>{{ message }}</span>
+        <button onclick="this.parentElement.remove()">×</button>
+      </div>
+      {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'web:login' %}">
+      {% csrf_token %}
+      <div class="form-grid" style="gap:16px">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input class="form-control" type="text" id="username" name="username"
+                 placeholder="Enter your username" required autofocus
+                 value="{{ request.POST.username|default:'' }}">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input class="form-control" type="password" id="password" name="password"
+                 placeholder="Enter your password" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px">
+          Sign In
+        </button>
+      </div>
+    </form>
+
+    <div class="auth-divider">or</div>
+    <div class="auth-footer">
+      Don't have an account?
+      <a href="{% url 'web:register' %}">Register here</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

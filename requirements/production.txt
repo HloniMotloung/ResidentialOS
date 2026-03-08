@@ -1,0 +1,19 @@
+# requirements/production.txt
+# Install with: pip install -r requirements/production.txt
+
+-r base.txt
+
+# Web server
+gunicorn==21.2.0
+
+# PostgreSQL
+psycopg2-binary==2.9.9
+
+# Database URL parser
+dj-database-url==2.1.0
+
+# Static file serving
+whitenoise==6.6.0
+
+# Email
+sendgrid==6.11.0

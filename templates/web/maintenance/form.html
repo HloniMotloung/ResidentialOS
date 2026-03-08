@@ -1,0 +1,55 @@
+{% extends "web/base.html" %}
+{% block title %}New Maintenance Request{% endblock %}
+{% block page_title %}New Maintenance Request{% endblock %}
+{% block content %}
+<div class="form-card" style="max-width:640px">
+  <form method="post">
+    {% csrf_token %}
+    <div class="form-grid form-grid-2" style="gap:16px">
+      <div class="form-section-title">Request Details</div>
+      <div class="form-group full">
+        <label>Title *</label>
+        <input class="form-control" name="title" required placeholder="Brief description of the issue">
+      </div>
+      <div class="form-group full">
+        <label>Description</label>
+        <textarea class="form-control" name="description" rows="4" placeholder="Detailed description…"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Unit *</label>
+        <select class="form-control" name="unit" required>
+          <option value="">— Select unit —</option>
+          {% for unit in units %}
+          <option value="{{ unit.id }}">{{ unit.unit_number }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <select class="form-control" name="category">
+          <option value="plumbing">Plumbing</option>
+          <option value="electrical">Electrical</option>
+          <option value="structural">Structural</option>
+          <option value="landscaping">Landscaping</option>
+          <option value="security">Security</option>
+          <option value="cleaning">Cleaning</option>
+          <option value="general">General</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Priority</label>
+        <select class="form-control" name="priority">
+          <option value="low">Low</option>
+          <option value="medium" selected>Medium</option>
+          <option value="high">High</option>
+          <option value="critical">Critical</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <a href="{% url 'web:maintenance' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Submit Request</button>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

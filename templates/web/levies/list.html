@@ -1,0 +1,111 @@
+{% extends "web/base.html" %}
+{% block title %}Levies — ResidentialOS{% endblock %}
+{% block page_title %}Levy Management{% endblock %}
+
+{% block topbar_actions %}
+<a href="{% url 'web:levy_add' %}" class="btn btn-primary btn-sm">
+  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  Add Billing
+</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Summary strip -->
+<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:20px">
+  <div class="stat-card" style="padding:16px">
+    <div class="stat-value" style="font-size:22px">{{ summary.total }}</div>
+    <div class="stat-label">Total Bills</div>
+  </div>
+  <div class="stat-card" style="padding:16px">
+    <div class="stat-value" style="font-size:22px;color:var(--danger)">{{ summary.overdue }}</div>
+    <div class="stat-label">Overdue</div>
+  </div>
+  <div class="stat-card" style="padding:16px">
+    <div class="stat-value" style="font-size:22px;color:var(--warning)">{{ summary.outstanding }}</div>
+    <div class="stat-label">Outstanding</div>
+  </div>
+  <div class="stat-card" style="padding:16px">
+    <div class="stat-value" style="font-size:22px;color:var(--success)">{{ summary.paid }}</div>
+    <div class="stat-label">Paid</div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <div class="search-box">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="searchInput" placeholder="Search unit, resident…">
+  </div>
+  <select class="filter-select" id="statusFilter">
+    <option value="">All Statuses</option>
+    <option value="outstanding" {% if request.GET.status == 'outstanding' %}selected{% endif %}>Outstanding</option>
+    <option value="overdue"     {% if request.GET.status == 'overdue' %}selected{% endif %}>Overdue</option>
+    <option value="partial"     {% if request.GET.status == 'partial' %}selected{% endif %}>Partial</option>
+    <option value="paid"        {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+  </select>
+  <select class="filter-select" id="monthFilter" onchange="this.form && this.form.submit()">
+    <option value="">All Months</option>
+    {% for month in billing_months %}
+    <option value="{{ month|date:'Y-m' }}" {% if request.GET.month == month|date:'Y-m' %}selected{% endif %}>
+      {{ month|date:"F Y" }}
+    </option>
+    {% endfor %}
+  </select>
+</div>
+
+<div class="table-card">
+  <div class="table-card-header">
+    <span class="table-card-title">{{ billings|length }} Billing Record{{ billings|length|pluralize }}</span>
+  </div>
+  <div class="table-wrap">
+    <table id="mainTable">
+      <thead><tr>
+        <th>Unit</th>
+        <th>Resident</th>
+        <th>Month</th>
+        <th>Amount Due</th>
+        <th>Paid</th>
+        <th>Balance</th>
+        <th>Status</th>
+        <th></th>
+      </tr></thead>
+      <tbody>
+      {% for billing in billings %}
+      <tr>
+        <td>{{ billing.unit.unit_number }}</td>
+        <td>{{ billing.resident.full_name|default:"—" }}</td>
+        <td>{{ billing.billing_month|date:"M Y" }}</td>
+        <td class="font-mono">R{{ billing.amount_due|floatformat:2 }}</td>
+        <td class="font-mono text-success">R{{ billing.amount_paid|floatformat:2 }}</td>
+        <td class="font-mono {% if billing.balance > 0 %}text-danger{% else %}text-success{% endif %}">
+          R{{ billing.balance|floatformat:2 }}
+        </td>
+        <td>
+          {% if billing.status == 'paid' %}<span class="badge badge-success">Paid</span>
+          {% elif billing.status == 'overdue' %}<span class="badge badge-danger">Overdue</span>
+          {% elif billing.status == 'partial' %}<span class="badge badge-warning">Partial</span>
+          {% else %}<span class="badge badge-muted">Outstanding</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px">
+            <a href="{% url 'web:levy_detail' billing.id %}" class="btn btn-secondary btn-sm">View</a>
+            {% if billing.status != 'paid' %}
+            <a href="{% url 'web:levy_payment' billing.id %}" class="btn btn-success btn-sm">+ Payment</a>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8">
+        <div class="table-empty">
+          <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          <p>No levy records found.</p>
+        </div>
+      </td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

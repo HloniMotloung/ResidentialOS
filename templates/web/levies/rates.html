@@ -1,0 +1,37 @@
+{% extends "web/base.html" %}
+{% block title %}Levy Rates{% endblock %}
+{% block page_title %}Levy Rates{% endblock %}
+{% block topbar_actions %}
+<a href="{% url 'web:levy_rate_add' %}" class="btn btn-primary btn-sm">+ Add Rate</a>
+{% endblock %}
+{% block content %}
+<div class="table-card">
+  <div class="table-card-header"><span class="table-card-title">{{ rates|length }} Rate{{ rates|length|pluralize }}</span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Name</th><th>Unit Type</th><th>Bedrooms</th><th>Size Range</th><th>Amount</th><th>From</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for rate in rates %}
+      <tr>
+        <td>{{ rate.name }}</td>
+        <td>{{ rate.get_unit_type_display|default:"All types" }}</td>
+        <td>{{ rate.bedrooms|default:"Any" }}</td>
+        <td>
+          {% if rate.min_size_sqm or rate.max_size_sqm %}
+            {{ rate.min_size_sqm|default:"0" }}–{{ rate.max_size_sqm|default:"∞" }} m²
+          {% else %}Any{% endif %}
+        </td>
+        <td class="font-mono" style="color:var(--gold-light)">R{{ rate.amount|floatformat:2 }}/mo</td>
+        <td style="font-size:12px;color:var(--text-muted)">{{ rate.effective_from|date:"d M Y" }}</td>
+        <td>{% if rate.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-muted">Inactive</span>{% endif %}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="7"><div class="table-empty">
+        <p>No levy rates yet. <a href="{% url 'web:levy_rate_add' %}" style="color:var(--gold-light)">Add your first rate.</a></p>
+      </div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
